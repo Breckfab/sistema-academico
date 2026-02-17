@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Panel Administrador{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4" style="color:var(--navy)">
+  <i class="bi bi-shield-lock-fill me-2"></i>Panel de Administrador
+</h4>
+
+{# ── Estadísticas ── #}
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card text-center py-3">
+      <div style="font-size:2.2rem;color:var(--navy)"><i class="bi bi-people-fill"></i></div>
+      <div class="fs-4 fw-bold" style="color:var(--navy)">{{ profesores|length }}</div>
+      <div class="text-muted small">Profesores</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center py-3">
+      <div style="font-size:2.2rem;color:var(--navy)"><i class="bi bi-journal-bookmark-fill"></i></div>
+      <div class="fs-4 fw-bold" style="color:var(--navy)">{{ materias|length }}</div>
+      <div class="text-muted small">Materias</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center py-3">
+      <div style="font-size:2.2rem;color:var(--navy)"><i class="bi bi-person-badge-fill"></i></div>
+      <div class="fs-4 fw-bold" style="color:var(--navy)">{{ alumnos|length }}</div>
+      <div class="text-muted small">Alumnos</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center py-3">
+      <div style="font-size:2.2rem;color:var(--navy)"><i class="bi bi-file-earmark-excel"></i></div>
+      <a href="{{ url_for('exportar') }}" class="btn btn-navy btn-sm mt-2">Exportar todo</a>
+      <div class="text-muted small mt-1">Exportar Excel</div>
+    </div>
+  </div>
+</div>
+
+{# ── Filtro por profesor ── #}
+<div class="card mb-4">
+  <div class="card-header"><i class="bi bi-funnel me-2"></i>Filtrar materias por profesor</div>
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('listar_materias') }}" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label>Profesor</label>
+        <select name="profesor_id" class="form-select">
+          <option value="">Todos los profesores</option>
+          {% for p in profesores %}
+          <option value="{{ p.id }}">{{ p.nombre_completo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-navy"><i class="bi bi-search me-1"></i>Ver materias</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── Tabla de profesores ── #}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-people me-2"></i>Profesores registrados</span>
+    <a href="{{ url_for('admin_profesores') }}" class="btn btn-sm"
+       style="background:#fff;color:var(--navy);border:1px solid #c9d9f0">
+      <i class="bi bi-gear me-1"></i>Gestionar
+    </a>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Nombre</th><th>Usuario</th><th>Email</th>
+          <th>Materias</th><th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in profesores %}
+        <tr>
+          <td>{{ p.nombre_completo }}</td>
+          <td><code>{{ p.username }}</code></td>
+          <td>{{ p.email or '—' }}</td>
+          <td>
+            <a href="{{ url_for('listar_materias', profesor_id=p.id) }}"
+               class="badge text-decoration-none" style="background:var(--navy)">
+              {{ p.materias.count() }} materia(s)
+            </a>
+          </td>
+          <td>
+            {% if p.activo %}
+            <span class="badge bg-success">Activo</span>
+            {% else %}
+            <span class="badge bg-danger">Inactivo</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-3">
+            No hay profesores registrados.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
