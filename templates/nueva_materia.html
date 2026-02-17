@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if editando else 'Nueva' }} Materia{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{{ url_for('listar_materias') }}" class="btn btn-outline-navy me-3">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="fw-bold mb-0" style="color:var(--navy)">
+    {{ 'Editar Materia' if editando else 'Nueva Materia' }}
+  </h4>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="POST" data-confirm>
+
+      {# ── Datos básicos ── #}
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label>Nombre de la materia <span class="text-danger">*</span></label>
+          <input type="text" name="nombre" class="form-control" required
+                 value="{{ materia.nombre if editando else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label>Tipo <span class="text-danger">*</span></label>
+          <select name="tipo" class="form-select" required>
+            <option value="">Elegir tipo…</option>
+            {% for v, l in [
+              ('materia_anual','Materia Anual'),
+              ('materia_cuatrimestral','Materia Cuatrimestral'),
+              ('taller','Taller (Promoción directa ≥ 7)')
+            ] %}
+            <option value="{{ v }}"
+              {% if editando and materia.tipo == v %}selected{% endif %}>
+              {{ l }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label>Año académico</label>
+          <input type="number" name="anio_academico" class="form-control"
+                 value="{{ materia.anio_academico if editando else now.year }}"
+                 min="2000" max="2099">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label>Horario</label>
+        <input type="text" name="horario" class="form-control"
+               placeholder="Ej: Lunes 18:00-20:00"
+               value="{{ materia.horario if editando else '' }}">
+      </div>
+
+      {# Admin asigna profesor #}
+      {% if profesores %}
+      <div class="mb-3">
+        <label>Asignar a profesor <span class="text-danger">*</span></label>
+        <select name="profesor_id" class="form-select" required>
+          {% for p in profesores %}
+          <option value="{{ p.id }}">{{ p.nombre_completo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      {# ── Semestres ── #}
+      <div class="card mb-3" style="border-color:#d0dff0">
+        <div class="card-header"
+             style="background:#e8f0fb;color:var(--navy);font-weight:600">
+          <i class="bi bi-calendar2-range me-2"></i>Fechas de Semestres
+        </div>
+        <div class="card-body row g-3">
+          <div class="col-md-3">
+            <label>Inicio 1er semestre</label>
+            <input type="date" name="inicio_1er" class="form-control"
+                   value="{{ materia.inicio_1er.isoformat() if editando and materia.inicio_1er else '' }}">
+          </div>
+          <div class="col-md-3">
+            <label>Fin 1er semestre</label>
+            <input type="date" name="fin_1er" class="form-control"
+                   value="{{ materia.fin_1er.isoformat() if editando and materia.fin_1er else '' }}">
+          </div>
+          <div class="col-md-3">
+            <label>Inicio 2do semestre</label>
+            <input type="date" name="inicio_2do" class="form-control"
+                   value="{{ materia.inicio_2do.isoformat() if editando and materia.inicio_2do else '' }}">
+          </div>
+          <div class="col-md-3">
+            <label>Fin 2do semestre</label>
+            <input type="date" name="fin_2do" class="form-control"
+                   value="{{ materia.fin_2do.isoformat() if editando and materia.fin_2do else '' }}">
+          </div>
+        </div>
+      </div>
+
+      {# ── Campos pedagógicos ── #}
+      <div class="mb-3">
+        <label>Concepto de la materia</label>
+        <textarea name="concepto" class="form-control" rows="3"
+                  placeholder="Descripción general, objetivos…">{{ materia.concepto if editando else '' }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label>Programa / Bibliografía</label>
+        <textarea name="programa" class="form-control" rows="4"
+                  placeholder="Libros, software, unidades temáticas…">{{ materia.programa if editando else '' }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label>Notas Adicionales</label>
+        <textarea name="notas_adicionales" class="form-control"
+                  rows="3">{{ materia.notas_adicionales if editando else '' }}</textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-navy">
+          <i class="bi bi-floppy me-2"></i>
+          {{ 'Guardar cambios' if editando else 'Crear Materia' }}
+        </button>
+        <a href="{{ url_for('listar_materias') }}" class="btn btn-outline-secondary">
+          Cancelar
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
