@@ -1,0 +1,123 @@
+!-- ════════════════════════════════════════════
+     templates/reincorporatorios.html
+════════════════════════════════════════════ -->
+{% extends 'base.html' %}
+{% block title %}Reincorporatorios{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0" style="color:var(--navy)">
+    <i class="bi bi-arrow-repeat me-2"></i>Reincorporatorios
+  </h4>
+</div>
+
+<div class="alert alert-info py-2 mb-3">
+  <i class="bi bi-info-circle me-2"></i>
+  Los reincorporatorios se otorgan a alumnos que <strong>excedieron el límite de inasistencias</strong>.
+</div>
+
+{# ── Nuevo reincorporatorio ── #}
+{% if current_user.rol != 'demo' %}
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-plus-circle me-2"></i>Registrar nuevo reincorporatorio
+  </div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('nuevo_reincorporatorio') }}" data-confirm>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label>Alumno</label>
+          <select name="alumno_id" class="form-select" required>
+            <option value="">Elegir alumno…</option>
+            {% for a in alumnos|sort(attribute='apellido') %}
+            <option value="{{ a.id }}">{{ a.apellido }}, {{ a.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label>Materia</label>
+          <select name="materia_id" class="form-select" required>
+            <option value="">Elegir materia…</option>
+            {% for m in materias %}
+            <option value="{{ m.id }}">{{ m.nombre }} ({{ m.anio_academico }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label>Nota</label>
+          <input type="number" name="nota" step="0.01" min="0" max="10"
+                 class="form-control">
+        </div>
+        <div class="col-md-2">
+          <label>Fecha</label>
+          <input type="date" name="fecha" class="form-control">
+        </div>
+        <div class="col-md-8">
+          <label>Comentario</label>
+          <input type="text" name="comentario" class="form-control"
+                 placeholder="Motivo del reincorporatorio…">
+        </div>
+        <div class="col-auto d-flex align-items-end">
+          <button type="submit" class="btn btn-navy">
+            <i class="bi bi-save me-1"></i>Registrar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{# ── Listado ── #}
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-table me-2"></i>Historial de reincorporatorios
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Alumno</th><th>Materia</th><th>Nota</th>
+          <th>Fecha</th><th>Comentario</th><th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in regs %}
+        <tr>
+          <td><strong>{{ r.alumno.apellido }}</strong>, {{ r.alumno.nombre }}</td>
+          <td>{{ r.materia.nombre }}</td>
+          <td>
+            {% if r.nota is not none %}
+              {% if r.nota <= 3 %}
+                <span class="grade-red">{{ "%.1f"|format(r.nota) }}</span>
+              {% else %}
+                {{ "%.1f"|format(r.nota) }}
+              {% endif %}
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ r.fecha.strftime('%d/%m/%Y') if r.fecha else '—' }}</td>
+          <td>{{ r.comentario or '—' }}</td>
+          <td>
+            {% if current_user.rol != 'demo' %}
+            <form method="POST" action="{{ url_for('borrar_reincorporatorio', rid=r.id) }}"
+                  class="d-inline"
+                  onsubmit="return confirm('¿Eliminar este reincorporatorio?')">
+              <button class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            No hay reincorporatorios registrados.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
