@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Materias{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0" style="color:var(--navy)">
+    <i class="bi bi-journal-bookmark-fill me-2"></i>
+    {% if current_user.rol == 'admin' %}Todas las Materias{% else %}Mis Materias{% endif %}
+  </h4>
+  {% if current_user.rol != 'demo' %}
+  <a href="{{ url_for('nueva_materia') }}" class="btn btn-navy">
+    <i class="bi bi-plus-circle me-1"></i>Nueva Materia
+  </a>
+  {% endif %}
+</div>
+
+{# Filtro admin por profesor #}
+{% if current_user.rol == 'admin' and profesores %}
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="mb-1">Filtrar por profesor</label>
+        <select name="profesor_id" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          {% for p in profesores %}
+          <option value="{{ p.id }}" {% if profe_id==p.id %}selected{% endif %}>
+            {{ p.nombre_completo }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-sm btn-navy"><i class="bi bi-search"></i> Filtrar</button>
+      </div>
+      {% if profe_id %}
+      <div class="col-auto">
+        <a href="{{ url_for('listar_materias') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-x"></i> Limpiar
+        </a>
+      </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Materia</th><th>Tipo</th><th>Año</th><th>Horario</th>
+          {% if current_user.rol == 'admin' %}<th>Profesor</th>{% endif %}
+          <th>Alumnos</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in materias %}
+        <tr>
+          <td><strong>{{ m.nombre }}</strong></td>
+          <td>
+            {% if m.tipo == 'taller' %}
+              <span class="badge" style="background:#0d6efd">Taller</span>
+            {% elif m.tipo == 'materia_anual' %}
+              <span class="badge" style="background:var(--navy)">Anual</span>
+            {% else %}
+              <span class="badge" style="background:#6f42c1">Cuatrimestral</span>
+            {% endif %}
+          </td>
+          <td>{{ m.anio_academico or '—' }}</td>
+          <td>{{ m.horario or '—' }}</td>
+          {% if current_user.rol == 'admin' %}
+          <td>{{ m.profesor.nombre_completo if m.profesor else '—' }}</td>
+          {% endif %}
+          <td>
+            <a href="{{ url_for('alumnos_por_materia', mid=m.id) }}"
+               class="badge text-decoration-none" style="background:var(--navy)">
+              {{ m.alumnos.count() }} alumnos
+            </a>
+          </td>
+          <td>
+            <a href="{{ url_for('editar_materia', mid=m.id) }}"
+               class="btn btn-sm btn-outline-navy me-1" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            {% if current_user.rol != 'demo' %}
+            <form method="POST" action="{{ url_for('borrar_materia', mid=m.id) }}"
+                  class="d-inline"
+                  onsubmit="return confirm('¿Eliminar esta materia?')">
+              <button class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No hay materias registradas.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
