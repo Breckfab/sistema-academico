@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Editar Alumno{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{{ url_for('listar_alumnos') }}" class="btn btn-outline-navy me-3">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="fw-bold mb-0" style="color:var(--navy)">
+    Editar: {{ alumno.apellido }}, {{ alumno.nombre }}
+  </h4>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="POST" data-confirm>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label>Nombre <span class="text-danger">*</span></label>
+          <input type="text" name="nombre" class="form-control"
+                 value="{{ alumno.nombre }}" required autofocus>
+        </div>
+        <div class="col-md-4">
+          <label>Apellido <span class="text-danger">*</span></label>
+          <input type="text" name="apellido" class="form-control"
+                 value="{{ alumno.apellido }}" required>
+        </div>
+        <div class="col-md-4">
+          <label>DNI</label>
+          <input type="text" name="dni" class="form-control"
+                 value="{{ alumno.dni or '' }}">
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-navy">
+          <i class="bi bi-floppy me-2"></i>Guardar cambios
+        </button>
+        <a href="{{ url_for('listar_alumnos') }}" class="btn btn-outline-secondary">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
