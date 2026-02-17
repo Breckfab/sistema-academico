@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Inasistencias{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0" style="color:var(--navy)">
+    <i class="bi bi-calendar-x-fill me-2"></i>Inasistencias
+  </h4>
+</div>
+
+{# Buscador #}
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="mb-1">Buscar alumno</label>
+        <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm"
+               placeholder="Apellido o nombre">
+      </div>
+      <div class="col-md-3">
+        <label class="mb-1">Materia</label>
+        <select name="materia_id" class="form-select form-select-sm">
+          <option value="">Todas</option>
+          {% for m in materias %}
+          <option value="{{ m.id }}" {% if materia_id==m.id %}selected{% endif %}>
+            {{ m.nombre }} ({{ m.anio_academico }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-sm btn-navy">
+          <i class="bi bi-search me-1"></i>Buscar
+        </button>
+      </div>
+      {% if q or materia_id %}
+      <div class="col-auto">
+        <a href="{{ url_for('listar_inasistencias') }}"
+           class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-x"></i> Limpiar
+        </a>
+      </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-table me-2"></i>Registro de inasistencias
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Alumno</th><th>Materia</th>
+          <th>1er Cuatrimestre</th><th>2do Cuatrimestre</th>
+          <th>Total</th><th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set visto = [] %}
+        {% for reg in registros %}
+          {% set key = reg.alumno_id|string + '_' + reg.materia_id|string %}
+          {% if key not in visto %}
+            {% set _ = visto.append(key) %}
+            {% set c1 = registros|selectattr('alumno_id','eq',reg.alumno_id)|selectattr('materia_id','eq',reg.materia_id)|selectattr('cuatrimestre','eq',1)|first %}
+            {% set c2 = registros|selectattr('alumno_id','eq',reg.alumno_id)|selectattr('materia_id','eq',reg.materia_id)|selectattr('cuatrimestre','eq',2)|first %}
+            {% set tot = (c1.cantidad if c1 else 0) + (c2.cantidad if c2 else 0) %}
+        <tr>
+          <td><strong>{{ reg.alumno.apellido }}</strong>, {{ reg.alumno.nombre }}</td>
+          <td>{{ reg.materia.nombre }}</td>
+          <td>{{ c1.cantidad if c1 else 0 }}</td>
+          <td>{{ c2.cantidad if c2 else 0 }}</td>
+          <td>
+            <span class="badge {% if tot > 6 %}bg-danger{% elif tot > 3 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+              {{ tot }}
+            </span>
+          </td>
+          <td>
+            <a href="{{ url_for('editar_inasistencias', aid=reg.alumno_id, mid=reg.materia_id) }}"
+               class="btn btn-sm btn-outline-navy">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </td>
+        </tr>
+          {% endif %}
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            No hay registros de inasistencias.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
