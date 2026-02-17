@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Nuevo Alumno{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{{ url_for('listar_alumnos') }}" class="btn btn-outline-navy me-3">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="fw-bold mb-0" style="color:var(--navy)">Registrar nuevo alumno</h4>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="POST" data-confirm>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label>Nombre <span class="text-danger">*</span></label>
+          <input type="text" name="nombre" class="form-control" required autofocus>
+        </div>
+        <div class="col-md-4">
+          <label>Apellido <span class="text-danger">*</span></label>
+          <input type="text" name="apellido" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+          <label>DNI (opcional)</label>
+          <input type="text" name="dni" class="form-control"
+                 placeholder="Sin puntos ni guiones">
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label>Año de cursada <span class="text-danger">*</span></label>
+          <input type="number" name="anio_cursada" class="form-control"
+                 value="{{ now.year }}" min="2000" max="2099" required>
+        </div>
+        <div class="col-md-4">
+          <label>Fecha de inscripción</label>
+          <input type="date" name="fecha_inscripcion" class="form-control"
+                 value="{{ hoy }}">
+          <small class="text-muted">Por defecto: hoy. Podés cambiarla.</small>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label>Inscribir en materias (podés elegir varias)</label>
+        <div class="row g-2 mt-1">
+          {% for m in materias %}
+          <div class="col-md-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="materia_ids"
+                     value="{{ m.id }}" id="mat{{ m.id }}">
+              <label class="form-check-label" for="mat{{ m.id }}">
+                {{ m.nombre }}
+                <small class="text-muted">({{ m.anio_academico }})</small>
+              </label>
+            </div>
+          </div>
+          {% else %}
+          <div class="col">
+            <em class="text-muted">No hay materias disponibles.</em>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-navy">
+          <i class="bi bi-person-check me-2"></i>Registrar Alumno
+        </button>
+        <a href="{{ url_for('listar_alumnos') }}" class="btn btn-outline-secondary">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
