@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Alumnos de {{ materia.nombre }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{{ url_for('listar_materias') }}" class="btn btn-outline-navy me-3">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="fw-bold mb-0" style="color:var(--navy)">{{ materia.nombre }}</h4>
+    <small class="text-muted">
+      {{ materia.anio_academico }} |
+      {% if materia.tipo == 'taller' %}Taller
+      {% elif materia.tipo == 'materia_anual' %}Anual
+      {% else %}Cuatrimestral{% endif %}
+      {% if materia.horario %}| {{ materia.horario }}{% endif %}
+    </small>
+  </div>
+</div>
+
+{# Filtro por año #}
+<form method="GET" class="row g-2 mb-3">
+  <div class="col-auto">
+    <label class="col-form-label">Año de cursada:</label>
+  </div>
+  <div class="col-auto">
+    <input type="number" name="anio" value="{{ anio or '' }}"
+           class="form-control form-control-sm" placeholder="Ej: 2025">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-sm btn-navy"><i class="bi bi-search"></i></button>
+  </div>
+  {% if anio %}
+  <div class="col-auto">
+    <a href="{{ url_for('alumnos_por_materia', mid=materia.id) }}"
+       class="btn btn-sm btn-outline-secondary">Limpiar</a>
+  </div>
+  {% endif %}
+</form>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>
+      <i class="bi bi-people me-2"></i>
+      {{ resultados|length }} alumno(s)
+      {% if anio %}del año {{ anio }}{% endif %}
+    </span>
+    {% if current_user.rol != 'demo' %}
+    <a href="{{ url_for('nuevo_alumno') }}" class="btn btn-sm btn-light"
+       style="color:var(--navy);border:1px solid #c9d9f0">
+      <i class="bi bi-person-plus me-1"></i>Nuevo alumno
+    </a>
+    {% endif %}
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Apellido y Nombre</th><th>DNI</th>
+          <th>Año cursada</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alumno, anio_curs in resultados %}
+        <tr>
+          <td class="text-muted">{{ loop.index }}</td>
+          <td><strong>{{ alumno.apellido }}</strong>, {{ alumno.nombre }}</td>
+          <td>{{ alumno.dni or '—' }}</td>
+          <td>{{ anio_curs or '—' }}</td>
+          <td>
+            <a href="{{ url_for('editar_calificacion', aid=alumno.id, mid=materia.id) }}"
+               class="btn btn-sm btn-outline-navy me-1" title="Calificaciones">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{{ url_for('editar_inasistencias', aid=alumno.id, mid=materia.id) }}"
+               class="btn btn-sm btn-outline-navy" title="Inasistencias">
+              <i class="bi bi-calendar-x"></i>
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            No hay alumnos {% if anio %}para el año {{ anio }}{% endif %}.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
