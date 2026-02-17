@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Registro de Profesor{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-header">Registro de nuevo Profesor</div>
+      <div class="card-body p-4">
+        <p class="small text-muted mb-3">
+          Para registrarse necesitás el código otorgado por el administrador.
+        </p>
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in msgs %}
+          <div class="alert alert-{{ cat }} py-2">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <form method="POST">
+          <div class="mb-3">
+            <label>Código del Administrador <span class="text-danger">*</span></label>
+            <input type="text" name="codigo" class="form-control" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <label>Nombre</label>
+              <input type="text" name="nombre" class="form-control" required>
+            </div>
+            <div class="col">
+              <label>Apellido</label>
+              <input type="text" name="apellido" class="form-control" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label>Email de contacto <span class="text-danger">*</span></label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Nombre de usuario <span class="text-danger">*</span></label>
+            <input type="text" name="username" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Contraseña <span class="text-danger">*</span></label>
+            <input type="password" name="password" class="form-control" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-navy w-100">
+            <i class="bi bi-person-plus me-2"></i>Registrarme
+          </button>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-navy w-100 mt-2">
+            Volver al login
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
