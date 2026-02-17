@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Alumnos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0" style="color:var(--navy)">
+    <i class="bi bi-people-fill me-2"></i>Alumnos
+  </h4>
+  {% if current_user.rol != 'demo' %}
+  <a href="{{ url_for('nuevo_alumno') }}" class="btn btn-navy">
+    <i class="bi bi-person-plus me-1"></i>Nuevo Alumno
+  </a>
+  {% endif %}
+</div>
+
+{# Buscador #}
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="mb-1">Buscar (nombre / apellido / DNI)</label>
+        <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm"
+               placeholder="Ej: García">
+      </div>
+      <div class="col-md-3">
+        <label class="mb-1">Materia</label>
+        <select name="materia_id" class="form-select form-select-sm">
+          <option value="">Todas</option>
+          {% for m in materias %}
+          <option value="{{ m.id }}" {% if materia_id==m.id %}selected{% endif %}>
+            {{ m.nombre }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="mb-1">Año cursada</label>
+        <input type="number" name="anio" value="{{ anio or '' }}"
+               class="form-control form-control-sm" placeholder="Ej: 2025">
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-sm btn-navy">
+          <i class="bi bi-search me-1"></i>Buscar
+        </button>
+      </div>
+      {% if q or materia_id or anio %}
+      <div class="col-auto">
+        <a href="{{ url_for('listar_alumnos') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-x me-1"></i>Limpiar
+        </a>
+      </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-person-badge me-2"></i>{{ alumnos|length }} alumno(s) encontrado(s)
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Apellido y Nombre</th><th>DNI</th>
+          <th>Materias</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in alumnos|sort(attribute='apellido') %}
+        <tr>
+          <td class="text-muted">{{ loop.index }}</td>
+          <td><strong>{{ a.apellido }}</strong>, {{ a.nombre }}</td>
+          <td>{{ a.dni or '—' }}</td>
+          <td>
+            {% for m in a.materias %}
+            <span class="badge me-1" style="background:var(--navy);font-size:.78rem">
+              {{ m.nombre }} ({{ m.anio_academico }})
+            </span>
+            {% endfor %}
+          </td>
+          <td>
+            <a href="{{ url_for('inscribir_alumno', aid=a.id) }}"
+               class="btn btn-sm btn-outline-navy me-1" title="Inscribir a materia">
+              <i class="bi bi-journal-plus"></i>
+            </a>
+            <a href="{{ url_for('editar_alumno', aid=a.id) }}"
+               class="btn btn-sm btn-outline-navy me-1" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            {% if current_user.rol != 'demo' %}
+            <form method="POST" action="{{ url_for('borrar_alumno', aid=a.id) }}"
+                  class="d-inline"
+                  onsubmit="return confirm('¿Eliminar al alumno {{ a.apellido }}, {{ a.nombre }}?')">
+              <button class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            No se encontraron alumnos.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
