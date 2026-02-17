@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Inasistencias — {{ alumno.nombre_completo }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{{ url_for('listar_inasistencias') }}" class="btn btn-outline-navy me-3">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="fw-bold mb-0" style="color:var(--navy)">
+      Inasistencias — {{ alumno.apellido }}, {{ alumno.nombre }}
+    </h4>
+    <small class="text-muted">{{ materia.nombre }} — {{ materia.anio_academico }}</small>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="POST" data-confirm>
+      <div class="row g-4 mb-4">
+        <div class="col-md-4">
+          <div class="card h-100" style="border-color:#003366">
+            <div class="card-header">1er Cuatrimestre
+              {% if materia.inicio_1er and materia.fin_1er %}
+              <small class="d-block fw-normal">
+                {{ materia.inicio_1er.strftime('%d/%m/%Y') }} al {{ materia.fin_1er.strftime('%d/%m/%Y') }}
+              </small>
+              {% endif %}
+            </div>
+            <div class="card-body">
+              <label class="fw-bold">Cantidad de inasistencias</label>
+              <input type="number" name="cuatri1" class="form-control form-control-lg"
+                     value="{{ inas1.cantidad }}" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100" style="border-color:#003366">
+            <div class="card-header">2do Cuatrimestre
+              {% if materia.inicio_2do and materia.fin_2do %}
+              <small class="d-block fw-normal">
+                {{ materia.inicio_2do.strftime('%d/%m/%Y') }} al {{ materia.fin_2do.strftime('%d/%m/%Y') }}
+              </small>
+              {% endif %}
+            </div>
+            <div class="card-body">
+              <label class="fw-bold">Cantidad de inasistencias</label>
+              <input type="number" name="cuatri2" class="form-control form-control-lg"
+                     value="{{ inas2.cantidad }}" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 text-center" style="border-color:#003366">
+            <div class="card-header">Total Anual</div>
+            <div class="card-body d-flex flex-column justify-content-center">
+              {% set total = inas1.cantidad + inas2.cantidad %}
+              <div style="font-size:3rem;font-weight:700;
+                {% if total > 6 %}color:#dc3545{% elif total > 3 %}color:#ffc107{% else %}color:#198754{% endif %}">
+                {{ total }}
+              </div>
+              <div class="text-muted small">inasistencias totales</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-navy">
+          <i class="bi bi-floppy me-2"></i>Guardar inasistencias
+        </button>
+        <a href="{{ url_for('listar_inasistencias') }}"
+           class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
