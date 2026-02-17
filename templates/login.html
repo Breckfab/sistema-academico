@@ -1,0 +1,207 @@
+<!-- ════════════════════════════════════════════
+     templates/login.html
+════════════════════════════════════════════ -->
+{% extends 'base.html' %}
+{% block title %}Iniciar Sesión{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-4">
+    <div class="text-center mb-4">
+      <i class="bi bi-mortarboard-fill" style="font-size:3rem;color:var(--navy)"></i>
+      <h4 class="mt-2 fw-bold" style="color:var(--navy)">Sistema de Gestión Académica</h4>
+    </div>
+    <div class="card shadow-sm">
+      <div class="card-header text-center">Iniciar Sesión</div>
+      <div class="card-body p-4">
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in msgs %}
+          <div class="alert alert-{{ cat }} py-2">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('login') }}">
+          <div class="mb-3">
+            <label>Usuario</label>
+            <input type="text" name="username" class="form-control" required autofocus>
+          </div>
+          <div class="mb-3">
+            <label>Contraseña</label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-navy w-100">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+          </button>
+        </form>
+        <hr>
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('recuperar_password') }}" class="text-decoration-none small" style="color:var(--navy2)">
+            ¿Olvidaste tu contraseña?
+          </a>
+          <a href="{{ url_for('registro') }}" class="text-decoration-none small" style="color:var(--navy2)">
+            Registrarse
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+<!-- ════════════════════════════════════════════
+     templates/registro.html
+════════════════════════════════════════════ -->
+{# SAVE AS: templates/registro.html #}
+{% extends 'base.html' %}
+{% block title %}Registro de Profesor{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-header">Registro de nuevo Profesor</div>
+      <div class="card-body p-4">
+        <p class="small text-muted mb-3">
+          Para registrarse necesitás el código otorgado por el administrador.
+        </p>
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in msgs %}
+          <div class="alert alert-{{ cat }} py-2">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <form method="POST">
+          <div class="mb-3">
+            <label>Código del Administrador <span class="text-danger">*</span></label>
+            <input type="text" name="codigo" class="form-control" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <label>Nombre</label>
+              <input type="text" name="nombre" class="form-control" required>
+            </div>
+            <div class="col">
+              <label>Apellido</label>
+              <input type="text" name="apellido" class="form-control" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label>Email de contacto <span class="text-danger">*</span></label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Nombre de usuario <span class="text-danger">*</span></label>
+            <input type="text" name="username" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Contraseña <span class="text-danger">*</span></label>
+            <input type="password" name="password" class="form-control" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-navy w-100">
+            <i class="bi bi-person-plus me-2"></i>Registrarme
+          </button>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-navy w-100 mt-2">
+            Volver al login
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+<!-- ════════════════════════════════════════════
+     templates/recuperar_password.html
+════════════════════════════════════════════ -->
+{# SAVE AS: templates/recuperar_password.html #}
+{% extends 'base.html' %}
+{% block title %}Recuperar Contraseña{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-header">Recuperar Contraseña</div>
+      <div class="card-body p-4">
+        <p class="small text-muted">
+          Ingresá tu email registrado y te enviaremos un enlace para restablecer tu contraseña.
+        </p>
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in msgs %}
+          <div class="alert alert-{{ cat }} py-2">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <form method="POST">
+          <div class="mb-3">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" required autofocus>
+          </div>
+          <button type="submit" class="btn btn-navy w-100">
+            <i class="bi bi-envelope me-2"></i>Enviar enlace
+          </button>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-navy w-100 mt-2">
+            Volver al login
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+<!-- ════════════════════════════════════════════
+     templates/reset_password.html
+════════════════════════════════════════════ -->
+{# SAVE AS: templates/reset_password.html #}
+{% extends 'base.html' %}
+{% block title %}Nueva Contraseña{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-header">Establecer nueva contraseña</div>
+      <div class="card-body p-4">
+        <form method="POST">
+          <div class="mb-3">
+            <label>Nueva contraseña</label>
+            <input type="password" name="password" class="form-control" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-navy w-100">
+            <i class="bi bi-lock me-2"></i>Guardar contraseña
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+<!-- ════════════════════════════════════════════
+     templates/cambiar_password.html
+════════════════════════════════════════════ -->
+{# SAVE AS: templates/cambiar_password.html #}
+{% extends 'base.html' %}
+{% block title %}Cambiar Contraseña{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-header">Cambiar mi contraseña</div>
+      <div class="card-body p-4">
+        <form method="POST" data-confirm>
+          <div class="mb-3">
+            <label>Contraseña actual</label>
+            <input type="password" name="actual" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Nueva contraseña</label>
+            <input type="password" name="nueva" class="form-control" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-navy w-100">
+            <i class="bi bi-lock-fill me-2"></i>Cambiar contraseña
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
