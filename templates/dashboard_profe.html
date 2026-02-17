@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Mi Panel{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-1" style="color:var(--navy)">
+  <i class="bi bi-speedometer2 me-2"></i>
+  Bienvenido, Prof. {{ current_user.nombre_completo }}
+</h4>
+<p class="text-muted mb-4">Tus materias activas para el ciclo lectivo.</p>
+
+{# ── Accesos rápidos ── #}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('listar_materias') }}" class="card text-center py-3 text-decoration-none h-100">
+      <div style="font-size:2rem;color:var(--navy)"><i class="bi bi-journal-bookmark"></i></div>
+      <div class="fw-bold" style="color:var(--navy)">Materias</div>
+      <small class="text-muted">{{ materias|length }} registradas</small>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('listar_alumnos') }}" class="card text-center py-3 text-decoration-none h-100">
+      <div style="font-size:2rem;color:var(--navy)"><i class="bi bi-people"></i></div>
+      <div class="fw-bold" style="color:var(--navy)">Alumnos</div>
+      <small class="text-muted">Gestionar alumnos</small>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('listar_calificaciones') }}" class="card text-center py-3 text-decoration-none h-100">
+      <div style="font-size:2rem;color:var(--navy)"><i class="bi bi-pencil-square"></i></div>
+      <div class="fw-bold" style="color:var(--navy)">Calificaciones</div>
+      <small class="text-muted">Notas y exámenes</small>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('listar_inasistencias') }}" class="card text-center py-3 text-decoration-none h-100">
+      <div style="font-size:2rem;color:var(--navy)"><i class="bi bi-calendar-x"></i></div>
+      <div class="fw-bold" style="color:var(--navy)">Inasistencias</div>
+      <small class="text-muted">Control de asistencia</small>
+    </a>
+  </div>
+</div>
+
+{# ── Filtrar alumnos por materia ── #}
+<div class="card mb-4">
+  <div class="card-header"><i class="bi bi-search me-2"></i>Ver alumnos de una materia</div>
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label>Materia</label>
+        <select id="materiaSel" class="form-select">
+          <option value="">Elegir materia…</option>
+          {% for m in materias %}
+          <option value="{{ m.id }}">{{ m.nombre }} ({{ m.anio_academico }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label>Año cursada</label>
+        <input type="number" id="anioSel" class="form-control"
+               placeholder="{{ now.year }}" value="{{ now.year }}">
+      </div>
+      <div class="col-auto">
+        <button type="button" class="btn btn-navy" id="btnVerAlumnos">
+          <i class="bi bi-people me-1"></i>Ver alumnos
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Mis materias ── #}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-journal-bookmark-fill me-2"></i>Mis materias</span>
+    {% if current_user.rol != 'demo' %}
+    <a href="{{ url_for('nueva_materia') }}" class="btn btn-sm btn-light"
+       style="color:var(--navy);border:1px solid #c9d9f0">
+      <i class="bi bi-plus-circle me-1"></i>Nueva materia
+    </a>
+    {% endif %}
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Materia</th><th>Tipo</th><th>Año</th>
+          <th>Horario</th><th>Alumnos</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in materias %}
+        <tr>
+          <td><strong>{{ m.nombre }}</strong></td>
+          <td>
+            {% if m.tipo == 'taller' %}
+              <span class="badge" style="background:#0d6efd">Taller</span>
+            {% elif m.tipo == 'materia_anual' %}
+              <span class="badge" style="background:var(--navy)">Anual</span>
+            {% else %}
+              <span class="badge" style="background:#6f42c1">Cuatrimestral</span>
+            {% endif %}
+          </td>
+          <td>{{ m.anio_academico or '—' }}</td>
+          <td>{{ m.horario or '—' }}</td>
+          <td>
+            <a href="{{ url_for('alumnos_por_materia', mid=m.id) }}"
+               class="badge text-decoration-none" style="background:var(--navy)">
+              {{ m.alumnos.count() }}
+            </a>
+          </td>
+          <td>
+            <a href="{{ url_for('editar_materia', mid=m.id) }}"
+               class="btn btn-sm btn-outline-navy me-1" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{{ url_for('alumnos_por_materia', mid=m.id) }}"
+               class="btn btn-sm btn-outline-navy" title="Ver alumnos">
+              <i class="bi bi-people"></i>
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">
+            No tenés materias. <a href="{{ url_for('nueva_materia') }}">Crear una</a>.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('btnVerAlumnos').addEventListener('click', () => {
+  const mid  = document.getElementById('materiaSel').value;
+  const anio = document.getElementById('anioSel').value;
+  if (!mid) { alert('Elegí una materia primero.'); return; }
+  window.location = `/materias/${mid}/alumnos?anio=${anio}`;
+});
+</script>
+{% endblock %}
