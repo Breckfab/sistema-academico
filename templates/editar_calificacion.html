@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% block title %}Calificaciones — {{ alumno.nombre_completo }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .section-title {
+    font-weight: 700; color: var(--navy); font-size: 1rem;
+    border-bottom: 2px solid var(--navy); padding-bottom: 6px; margin-bottom: 14px;
+  }
+  .tp-row {
+    background: #f8fbff; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{{ url_for('listar_calificaciones') }}" class="btn btn-outline-navy me-3">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="fw-bold mb-0" style="color:var(--navy)">
+      {{ alumno.apellido }}, {{ alumno.nombre }}
+    </h4>
+    <small class="text-muted">{{ materia.nombre }} — {{ materia.anio_academico }}</small>
+  </div>
+</div>
+
+{% if cal.final_forzado %}
+<div class="alert" style="background:#f3e6ff;border-left:4px solid #9c27b0;color:#5b0090">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+  <strong>FINAL FORZADO por el profesor.</strong>
+  El alumno fue habilitado a rendir final sin haber aprobado parcial/recuperatorios.
+</div>
+{% endif %}
+
+<form method="POST" data-confirm>
+<input type="hidden" name="action" value="save">
+
+{# ══════════ TPs DINÁMICOS ══════════ #}
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-file-earmark-text me-2"></i>Trabajos Prácticos</span>
+    <button type="button" class="btn btn-sm btn-light" id="btnAddTP"
+            style="color:var(--navy);border:1px solid #c9d9f0">
+      <i class="bi bi-plus-circle me-1"></i>Agregar TP
+    </button>
+  </div>
+  <div class="card-body" id="tpContainer">
+    {% if cal.tps %}
+      {% for tp in cal.tps %}
+      <div class="tp-row row g-2 align-items-end" id="tp-block">
+        <div class="col-md-3">
+          <label>Nombre del TP</label>
+          <input type="text" name="tp_titulo" class="form-control form-control-sm"
+                 value="{{ tp.titulo }}" placeholder="TP1, Trabajo Final…">
+        </div>
+        <div class="col-md-2">
+          <label>Nota</label>
+          <input type="number" name="tp_nota" step="0.01" min="0" max="10"
+                 class="form-control form-control-sm tp-nota-input"
+                 value="{{ tp.nota if tp.nota is not none else '' }}">
+        </div>
+        <div class="col-md-2">
+          <label>Fecha</label>
+          <input type="date" name="tp_fecha" class="form-control form-control-sm"
+                 value="{{ tp.fecha }}">
+        </div>
+        <div class="col-md-4">
+          <label>Comentario</label>
+          <input type="text" name="tp_comentario" class="form-control form-control-sm"
+                 value="{{ tp.comentario }}" placeholder="Opcional">
+        </div>
+        <div class="col-auto">
+          <button type="button" class="btn btn-sm btn-outline-danger btn-remove-tp">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <em class="text-muted">No hay TPs cargados. Hacé clic en "Agregar TP".</em>
+    {% endif %}
+  </div>
+  {% if cal.promedio_tps is not none %}
+  <div class="card-footer">
+    Promedio de TPs:
+    <strong {% if cal.promedio_tps <= 3 %}class="grade-red"{% endif %}>
+      {{ "%.2f"|format(cal.promedio_tps) }}
+    </strong>
+  </div>
+  {% endif %}
+</div>
+
+{# ══════════ EXÁMENES PARCIALES ══════════ #}
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-clipboard2-check me-2"></i>Exámenes Parciales
+  </div>
+  <div class="card-body">
+
+    {# ── Parcial ── #}
+    <div class="section-title">Parcial</div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-2">
+        <label>Nota</label>
+        <input type="number" name="parcial_nota" step="0.01" min="0" max="10"
+               class="form-control nota-input"
+               value="{{ cal.parcial_nota if cal.parcial_nota is not none else '' }}">
+      </div>
+      <div class="col-md-3">
+        <label>Fecha</label>
+        <input type="date" name="parcial_fecha" class="form-control"
+               value="{{ cal.parcial_fecha.isoformat() if cal.parcial_fecha else '' }}">
+      </div>
+      <div class="col-md-7">
+        <label>Comentario</label>
+        <input type="text" name="parcial_comentario" class="form-control"
+               value="{{ cal.parcial_comentario or '' }}"
+               placeholder="Observaciones del parcial">
+      </div>
+    </div>
+
+    {# ── Recuperatorio 1 ── #}
+    <div class="section-title">
+      Recuperatorio 1
+      <small class="fw-normal text-muted ms-2">(se habilita si Parcial &lt; 4)</small>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-2">
+        <label>Nota R1</label>
+        <input type="number" name="r1_nota" step="0.01" min="0" max="10"
+               class="form-control nota-input"
+               value="{{ cal.r1_nota if cal.r1_nota is not none else '' }}">
+      </div>
+      <div class="col-md-3">
+        <label>Fecha</label>
+        <input type="date" name="r1_fecha" class="form-control"
+               value="{{ cal.r1_fecha.isoformat() if cal.r1_fecha else '' }}">
+      </div>
+      <div class="col-md-7">
+        <label>Comentario</label>
+        <input type="text" name="r1_comentario" class="form-control"
+               value="{{ cal.r1_comentario or '' }}" placeholder="Observaciones R1">
+      </div>
+    </div>
+
+    {# ── Recuperatorio 2 ── #}
+    <div class="section-title">
+      Recuperatorio 2
+      <small class="fw-normal text-muted ms-2">(se habilita si R1 &lt; 4)</small>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-2">
+        <label>Nota R2</label>
+        <input type="number" name="r2_nota" step="0.01" min="0" max="10"
+               class="form-control nota-input"
+               value="{{ cal.r2_nota if cal.r2_nota is not none else '' }}">
+      </div>
+      <div class="col-md-3">
+        <label>Fecha</label>
+        <input type="date" name="r2_fecha" class="form-control"
+               value="{{ cal.r2_fecha.isoformat() if cal.r2_fecha else '' }}">
+      </div>
+      <div class="col-md-7">
+        <label>Comentario</label>
+        <input type="text" name="r2_comentario" class="form-control"
+               value="{{ cal.r2_comentario or '' }}" placeholder="Observaciones R2">
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ══════════ FINAL ══════════ #}
+{% if materia.tipo in ('materia_anual', 'materia_cuatrimestral') %}
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-star-fill me-2"></i>Examen Final
+  </div>
+  <div class="card-body">
+    {% if not cal.aprobo_parcial and not cal.final_forzado %}
+    <div class="alert alert-warning py-2 mb-3">
+      <i class="bi bi-lock-fill me-2"></i>
+      El alumno no aprobó parcial ni recuperatorios. El final está bloqueado.
+    </div>
+    {% endif %}
+    <div class="row g-3 mb-3">
+      <div class="col-md-2">
+        <label>Nota Final</label>
+        <input type="number" name="final_nota" step="0.01" min="0" max="10"
+               class="form-control nota-input"
+               value="{{ cal.final_nota if cal.final_nota is not none else '' }}"
+               {% if not cal.aprobo_parcial and not cal.final_forzado %}disabled{% endif %}>
+      </div>
+      <div class="col-md-3">
+        <label>Fecha</label>
+        <input type="date" name="final_fecha" class="form-control"
+               value="{{ cal.final_fecha.isoformat() if cal.final_fecha else '' }}">
+      </div>
+      <div class="col-md-7">
+        <label>Comentario</label>
+        <input type="text" name="final_comentario" class="form-control"
+               value="{{ cal.final_comentario or '' }}">
+      </div>
+    </div>
+    {% if not cal.aprobo_parcial %}
+    <div class="form-check mt-2">
+      <input type="checkbox" class="form-check-input" name="forzar_final" value="1"
+             id="chkForzar" {% if cal.final_forzado %}checked{% endif %}
+             onchange="toggleFinalForced(this)">
+      <label class="form-check-label text-danger fw-bold" for="chkForzar">
+        ⚠ Forzar habilitación de final (sin aprobar parcial)
+      </label>
+    </div>
+    {% else %}
+    <input type="hidden" name="forzar_final" value="0">
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{# ══════════ CONCEPTO ══════════ #}
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="bi bi-chat-square-text me-2"></i>Concepto del alumno
+  </div>
+  <div class="card-body row g-3">
+    <div class="col-md-3">
+      <label>Calificación conceptual</label>
+      <select name="concepto_valor" class="form-select">
+        <option value="">Sin concepto</option>
+        {% for v in ['malo','bueno','muy bueno','excelente'] %}
+        <option value="{{ v }}" {% if cal.concepto_valor == v %}selected{% endif %}>
+          {{ v|title }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-9">
+      <label>Descripción (opcional)</label>
+      <textarea name="concepto_texto" class="form-control" rows="2"
+                placeholder="Podés escribir por qué elegiste ese concepto…">{{ cal.concepto_texto or '' }}</textarea>
+    </div>
+  </div>
+</div>
+
+{# ══════════ GUARDAR ══════════ #}
+<div class="d-flex gap-2">
+  <button type="submit" class="btn btn-navy btn-lg">
+    <i class="bi bi-floppy-fill me-2"></i>Guardar calificaciones
+  </button>
+  <a href="{{ url_for('listar_calificaciones') }}"
+     class="btn btn-outline-secondary btn-lg">Cancelar</a>
+</div>
+
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Coloreado dinámico de notas ──
+function colorNote(input) {
+  const v = parseFloat(input.value);
+  if (!isNaN(v) && v <= 3) {
+    input.style.color = '#cc0000';
+    input.style.fontWeight = '700';
+  } else {
+    input.style.color = '';
+    input.style.fontWeight = '';
+  }
+}
+document.querySelectorAll('.nota-input, .tp-nota-input').forEach(el => {
+  colorNote(el);
+  el.addEventListener('input', () => colorNote(el));
+});
+
+// ── TP dinámico ──
+const tpContainer = document.getElementById('tpContainer');
+const tpTemplate  = `
+<div class="tp-row row g-2 align-items-end" id="tp-block">
+  <div class="col-md-3">
+    <label>Nombre del TP</label>
+    <input type="text" name="tp_titulo" class="form-control form-control-sm" placeholder="TP1…">
+  </div>
+  <div class="col-md-2">
+    <label>Nota</label>
+    <input type="number" name="tp_nota" step="0.01" min="0" max="10"
+           class="form-control form-control-sm tp-nota-input">
+  </div>
+  <div class="col-md-2">
+    <label>Fecha</label>
+    <input type="date" name="tp_fecha" class="form-control form-control-sm">
+  </div>
+  <div class="col-md-4">
+    <label>Comentario</label>
+    <input type="text" name="tp_comentario" class="form-control form-control-sm" placeholder="Opcional">
+  </div>
+  <div class="col-auto">
+    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-tp">
+      <i class="bi bi-trash"></i>
+    </button>
+  </div>
+</div>`;
+
+document.getElementById('btnAddTP').addEventListener('click', () => {
+  const empty = tpContainer.querySelector('em');
+  if (empty) empty.remove();
+  tpContainer.insertAdjacentHTML('beforeend', tpTemplate);
+  tpContainer.querySelectorAll('.tp-nota-input').forEach(el => {
+    el.removeEventListener('input', colorNote);
+    el.addEventListener('input', () => colorNote(el));
+  });
+});
+
+tpContainer.addEventListener('click', e => {
+  if (e.target.closest('.btn-remove-tp')) {
+    e.target.closest('.tp-row').remove();
+  }
+});
+
+// ── Forzar final ──
+function toggleFinalForced(chk) {
+  const finalInput = document.querySelector('[name=final_nota]');
+  if (finalInput) finalInput.disabled = !chk.checked;
+}
+</script>
+{% endblock %}
